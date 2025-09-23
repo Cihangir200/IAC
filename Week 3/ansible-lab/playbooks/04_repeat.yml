@@ -1,0 +1,58 @@
+---
+- name: Packages per group
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install base tools on app
+      when: "'app' in group_names"
+      ansible.builtin.apt:
+        name: "{{ base_tools | default([]) }}"
+        state: present
+        update_cache: true
+      tags: [packages]
+
+    - name: Install db tools on db
+      when: "'db' in group_names"
+      ansible.builtin.apt:
+        name: "{{ db_tools | default([]) }}"
+        state: present
+        update_cache: true
+      tags: [packages]
+
+- name: Users from list (create + remove)
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    user_list:
+      - { name: "ops",   shell: "/bin/bash",        state: "present" }
+      - { name: "audit", shell: "/usr/sbin/nologin", state: "present" }
+      - { name: "temp",  shell: "/bin/bash",        state: "absent" }
+  tasks:
+    - name: Ensure users as declared
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        shell: "{{ item.shell }}"
+        state: "{{ item.state }}"
+      loop: "{{ user_list }}"
+      tags: [users]
+
+- name: Directories / Files from list
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    fs_items:
+      - { path: "/opt/tools",        state: "directory", mode: "0755", owner: "root", group: "root" }
+      - { path: "/opt/tools/README", state: "touch",     mode: "0644", owner: "root", group: "root" }
+  tasks:
+    - name: Create directories/files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        mode: "{{ item.mode }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+      loop: "{{ fs_items }}"
+      tags: [files]

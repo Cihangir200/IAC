@@ -1,0 +1,5 @@
+# Pakketten voor opdracht 4 (db)
+db_tools:
+  - mariadb-client
+  - postgresql-client
+  - jq

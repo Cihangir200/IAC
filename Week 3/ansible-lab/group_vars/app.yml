@@ -1,0 +1,6 @@
+# Pakketten voor opdracht 4 (app)
+base_tools:
+  - git
+  - htop
+  - unzip
+  - jq

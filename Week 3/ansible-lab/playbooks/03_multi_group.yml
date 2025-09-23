@@ -1,0 +1,27 @@
+---
+- name: App | chrony present & running
+  hosts: app
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install chrony
+      ansible.builtin.apt:
+        name: chrony
+        state: present
+        update_cache: true
+    - name: Enable & start chrony
+      ansible.builtin.service:
+        name: chrony
+        enabled: true
+        state: started
+
+- name: DB | curl present
+  hosts: db
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install curl
+      ansible.builtin.apt:
+        name: curl
+        state: present
+        update_cache: true
