@@ -1,0 +1,41 @@
+name: Ansible CI/CD - Week 5 Opdracht 2
+
+on:
+  push:
+    paths:
+      - "week-05/opdracht2.yml"
+      - "week-05/**"
+
+jobs:
+  lint:
+    name: Code check (syntax)
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ansible
+
+      - name: Ansible syntax check
+        run: ansible-playbook -i les-03/inventory.ini week-05/opdracht2.yml --syntax-check
+
+  deploy:
+    name: Run Ansible playbook
+    runs-on: self-hosted
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ansible
+
+      - name: Run playbook
+        run: ansible-playbook -i les-03/inventory.ini week-05/opdracht2.yml

@@ -1,0 +1,130 @@
+terraform {
+  required_version = ">= 1.6.0"
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+  subscription_id = "9db8a65a-f21a-44bb-b071-a9f1c67fbeb3"
+}
+
+# Bestaande Resource Group (mag in andere regio staan)
+data "azurerm_resource_group" "rg" {
+  name = "rg-iac"
+}
+
+# --- Zet ALLE resources in een toegestane regio ---
+# Pas hier aan als jouw policy een andere regio vereist (bv. "North Europe", "West US", ...).
+locals {
+  location = var.location
+}
+
+variable "location" {
+  type        = string
+  description = "Toegestane Azure regio voor resources/VM"
+  default     = "Sweden Central" # <-- zet hier evt. een andere toegestane regio
+}
+
+# ---------- Netwerk ----------
+resource "azurerm_virtual_network" "vnet" {
+  name                = "iac-vnet"
+  location            = local.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  address_space       = ["10.0.0.0/16"]
+}
+
+resource "azurerm_subnet" "subnet" {
+  name                 = "iac-subnet"
+  resource_group_name  = data.azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.1.0/24"]
+}
+
+resource "azurerm_network_security_group" "nsg" {
+  name                = "iac-nsg"
+  location            = local.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  security_rule {
+    name                       = "SSH"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_public_ip" "pip" {
+  name                = "iac-pip"
+  location            = local.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_network_interface" "nic" {
+  name                = "iac-nic"
+  location            = local.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  ip_configuration {
+    name                          = "ipcfg"
+    subnet_id                     = azurerm_subnet.subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.pip.id
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "nic_nsg_assoc" {
+  network_interface_id      = azurerm_network_interface.nic.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
+# ---------- VM (Ubuntu 24.04 LTS) ----------
+resource "azurerm_linux_virtual_machine" "vm" {
+  name                = "iac-vm"
+  location            = local.location         # VM in toegestane regio
+  resource_group_name = data.azurerm_resource_group.rg.name
+  network_interface_ids = [azurerm_network_interface.nic.id]
+
+  size                          = "Standard_B1s"   # of "Standard_B2ats_v2" / "Standard_DS1_v2" als toegestaan
+  admin_username                = "iac"
+  disable_password_authentication = true
+
+  admin_ssh_key {
+    username   = "iac"
+    public_key = file("~/.ssh/id_rsa.pub")   # RSA key vereist door Azure
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-noble"
+    sku       = "24_04-lts"
+    version   = "latest"
+  }
+}
+
+# Handig: public IP lokaal wegschrijven
+resource "local_file" "public_ip" {
+  filename   = "${path.module}/public_ip.txt"
+  content    = azurerm_public_ip.pip.ip_address
+  depends_on = [azurerm_linux_virtual_machine.vm]
+}

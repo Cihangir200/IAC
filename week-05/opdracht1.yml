@@ -1,0 +1,28 @@
+---
+- name: LAB5 - Opdracht 1 - Apache installeren zonder apt module
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Controleer of apache2 al geïnstalleerd is
+      command: dpkg -s apache2
+      register: apache_check
+      ignore_errors: true
+
+    - name: Installeer apache2 via apt-get (NIET via apt module)
+      shell: |
+        apt-get update -y
+        apt-get install -y apache2
+      when: apache_check.rc != 0
+      register: apache_install
+      changed_when: apache_install.rc == 0
+
+    - name: Toon status van apache2
+      command: systemctl status apache2
+      register: apache_status
+      changed_when: false
+
+    - name: Forceer een fout om te laten zien dat Ansible netjes faalt
+      command: /bin/false
+      register: forced_fail
+      changed_when: false

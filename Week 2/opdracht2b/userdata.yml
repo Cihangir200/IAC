@@ -1,0 +1,17 @@
+#cloud-config
+users:
+  - name: ${username}
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    ssh_authorized_keys:
+      - ${ssh_key}
+
+write_files:
+  - path: /home/${username}/hello.txt
+    content: |
+      Hello World
+    owner: ${username}:${username}
+    permissions: '0644'
+
+runcmd:
+  - chown -R ${username}:${username} /home/${username}
