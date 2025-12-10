@@ -1,0 +1,43 @@
+name: Terraform CI/CD - Week 5
+
+on:
+  push:
+    paths:
+      - "week-05/terraform/**"
+
+jobs:
+  terraform:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Terraform
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget unzip
+          wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+          unzip terraform_1.8.5_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/
+
+      - name: Terraform Init
+        working-directory: week-05/terraform
+        run: terraform init
+
+      - name: Terraform Format Check
+        working-directory: week-05/terraform
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        working-directory: week-05/terraform
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: week-05/terraform
+        run: terraform plan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: week-05/terraform
+        run: terraform apply -auto-approve

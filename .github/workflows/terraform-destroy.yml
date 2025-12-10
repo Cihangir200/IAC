@@ -1,0 +1,28 @@
+name: Terraform Destroy - Week 5
+
+on:
+  workflow_dispatch:
+
+jobs:
+  destroy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Terraform
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget unzip
+          wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+          unzip terraform_1.8.5_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/
+
+      - name: Terraform Init
+        working-directory: week-05/terraform
+        run: terraform init
+
+      - name: Destroy infrastructure
+        working-directory: week-05/terraform
+        run: terraform destroy -auto-approve
