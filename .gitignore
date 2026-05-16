@@ -2,10 +2,10 @@
 *.tfstate
 *.tfstate.*
 *.tfplan
+tfplan
 terraform.tfvars
 terraform-output.json
 *.retry
 *.pem
 *.key
 .ansible/
-
