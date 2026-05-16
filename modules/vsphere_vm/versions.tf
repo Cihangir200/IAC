@@ -1,8 +1,8 @@
 terraform {
   required_providers {
-    vsphere = {
-      source  = "vmware/vsphere"
-      version = "= 2.15.0"
+    esxi = {
+      source  = "josenk/esxi"
+      version = "= 1.10.3"
     }
   }
 }

@@ -4,9 +4,10 @@ provider "azurerm" {
   features {}
 }
 
-provider "vsphere" {
-  user                 = var.vsphere_user
-  password             = var.vsphere_password
-  vsphere_server       = var.vsphere_server
-  allow_unverified_ssl = var.vsphere_allow_unverified_ssl
+provider "esxi" {
+  esxi_hostname = var.vsphere_server
+  esxi_hostport = "22"
+  esxi_hostssl  = "443"
+  esxi_username = var.vsphere_user
+  esxi_password = var.vsphere_password
 }
