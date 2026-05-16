@@ -147,3 +147,9 @@ variable "vsphere_vm_memory" {
   type        = number
   default     = 2048
 }
+
+variable "enable_vsphere_clone" {
+  description = "Zet op true als vsphere_server een vCenter endpoint is. Laat false bij directe standalone ESXi-connecties."
+  type        = bool
+  default     = false
+}

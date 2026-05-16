@@ -37,3 +37,9 @@ variable "cpu" {
 variable "memory" {
   type = number
 }
+
+variable "enable_clone" {
+  description = "Zet op true wanneer vsphere_server naar vCenter wijst. Direct clonen via een standalone ESXi-host wordt niet ondersteund door de vSphere provider."
+  type        = bool
+  default     = false
+}
