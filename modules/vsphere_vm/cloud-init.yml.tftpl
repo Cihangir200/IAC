@@ -1,0 +1,18 @@
+#cloud-config
+package_update: true
+packages:
+  - open-vm-tools
+  - python3
+  - curl
+  - ca-certificates
+users:
+  - name: ${admin_username}
+    groups: [sudo, docker]
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+runcmd:
+  - systemctl enable --now open-vm-tools || true
+  - echo "vsphere-vm ready for ansible" > /etc/iac-lab
+

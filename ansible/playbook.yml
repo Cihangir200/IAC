@@ -1,0 +1,58 @@
+---
+- name: Configure hybrid cloud VMs and deploy Docker Compose app
+  hosts: hybrid
+  become: true
+
+  roles:
+    - role: geerlingguy.docker
+
+  tasks:
+    - name: Create application directory
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Copy Docker Compose file
+      ansible.builtin.copy:
+        src: ../app/docker-compose.yml
+        dest: "{{ app_compose_file }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0644"
+
+    - name: Create web content directory
+      ansible.builtin.file:
+        path: "{{ app_dir }}/html"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Render environment-specific homepage
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: "{{ app_dir }}/html/index.html"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0644"
+
+    - name: Start application with Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        pull: always
+        state: present
+
+    - name: Check local web application
+      ansible.builtin.uri:
+        url: http://127.0.0.1/
+        status_code: 200
+        return_content: true
+      register: web_check
+
+    - name: Show application title
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} returns {{ web_check.status }} via Docker Compose"
+

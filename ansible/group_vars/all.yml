@@ -1,0 +1,6 @@
+---
+app_dir: /opt/iac-webapp
+app_compose_file: "{{ app_dir }}/docker-compose.yml"
+docker_users:
+  - "{{ ansible_user }}"
+

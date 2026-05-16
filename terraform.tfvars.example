@@ -1,0 +1,24 @@
+project_name   = "iac-hybrid-lab"
+environment    = "lab"
+location       = "westeurope"
+admin_username = "iacadmin"
+
+azure_subscription_id = "00000000-0000-0000-0000-000000000000"
+
+azure_vnet_cidr     = "10.10.0.0/16"
+azure_workload_cidr = "10.10.1.0/24"
+onprem_cidr         = "192.168.56.0/24"
+
+# Publiek IP-adres van je school/lab VPN endpoint.
+onprem_vpn_public_ip = "203.0.113.10"
+vpn_shared_key       = "vervang-door-een-sterke-pre-shared-key"
+
+vsphere_server   = "192.168.1.99"
+vsphere_user     = "root"
+vsphere_password = "vervang-mij"
+
+vsphere_datacenter    = "ha-datacenter"
+vsphere_datastore     = "datastore1"
+vsphere_resource_pool = "Resources"
+vsphere_network       = "VM Network"
+vsphere_template      = "ubuntu-2204-cloudinit-template"
