@@ -52,6 +52,13 @@ variable "admin_username" {
   default     = "Student"
 }
 
+variable "admin_password" {
+  description = "Optioneel tijdelijk wachtwoord voor console/SSH login op de ESXi guest. Zet dit alleen in terraform.tfvars, nooit in Git."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "azure_vm_size" {
   description = "Azure VM grootte."
   type        = string

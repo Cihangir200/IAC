@@ -28,6 +28,11 @@ output "vsphere_vm_name" {
   value       = module.vsphere_vm.vm_name
 }
 
+output "vsphere_vm_private_ip" {
+  description = "Privaat IP-adres van de ESXi VM."
+  value       = module.vsphere_vm.vm_default_ip_address
+}
+
 output "ssh_public_key" {
   description = "Publieke SSH key die in CloudInit wordt geplaatst."
   value       = tls_private_key.ssh.public_key_openssh

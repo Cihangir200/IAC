@@ -59,4 +59,5 @@ module "vsphere_vm" {
   template_name   = var.vsphere_template
   cpu             = var.vsphere_vm_cpu
   memory          = var.vsphere_vm_memory
+  admin_password  = var.admin_password
 }

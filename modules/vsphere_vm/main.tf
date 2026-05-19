@@ -15,9 +15,15 @@ resource "esxi_guest" "this" {
   }
 
   guestinfo = {
+    "metadata" = base64gzip(jsonencode({
+      "instance-id"    = "${var.project_name}-esxi"
+      "local-hostname" = "${var.project_name}-esxi"
+    }))
+    "metadata.encoding" = "gzip+base64"
     "userdata" = base64gzip(templatefile("${path.module}/cloud-init.yml.tftpl", {
       admin_username = var.admin_username
       ssh_public_key = var.ssh_public_key
+      admin_password = var.admin_password
     }))
     "userdata.encoding" = "gzip+base64"
   }

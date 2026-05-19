@@ -4,6 +4,7 @@
   become: true
 
   roles:
+    - role: hybrid_vpn
     - role: geerlingguy.docker
 
   tasks:
@@ -55,4 +56,3 @@
     - name: Show application title
       ansible.builtin.debug:
         msg: "{{ inventory_hostname }} returns {{ web_check.status }} via Docker Compose"
-

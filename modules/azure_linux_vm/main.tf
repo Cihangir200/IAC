@@ -48,6 +48,18 @@ resource "azurerm_network_security_group" "this" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+
+  security_rule {
+    name                       = "AllowWireGuard"
+    priority                   = 1004
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Udp"
+    source_port_range          = "*"
+    destination_port_range     = "51820"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 }
 
 resource "azurerm_network_interface" "this" {
@@ -104,4 +116,10 @@ resource "azurerm_linux_virtual_machine" "this" {
   }))
 
   tags = var.tags
+
+  lifecycle {
+    ignore_changes = [
+      custom_data
+    ]
+  }
 }
