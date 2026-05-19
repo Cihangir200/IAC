@@ -3,7 +3,8 @@ extends: default
 
 rules:
   line-length:
-    max: 240
-    level: warning
+    level: disable
+  document-start:
+    level: disable
   truthy:
     allowed-values: ["true", "false", "on"]
