@@ -1,74 +1,76 @@
-# Video script, maximaal 5 minuten
+# Video Script, Maximaal 5 Minuten
 
 ## 0:00 - 0:30 Intro
 
-Laat de opdracht en repo zien. Noem dat de oplossing Terraform, CloudInit, Ansible Galaxy, Docker Compose, GitHub Actions, Azure en ESXi gebruikt.
+Laat de opdracht en GitHub repo zien. Noem dat de oplossing Terraform, Cloud-init, Ansible, Docker Compose, GitHub Actions, Azure en ESXi gebruikt.
 
-## 0:30 - 1:15 Terraform structuur
+## 0:30 - 1:15 Terraform
 
-Laat `main.tf`, `modules/azure_network`, `modules/azure_vpn`, `modules/azure_linux_vm` en `modules/vsphere_vm` zien.
+Laat `main.tf`, `modules/azure_linux_vm`, `modules/azure_network` en `modules/vsphere_vm` zien.
 
 Wijs aan:
 
-- Azure VM
-- vSphere/ESXi VM
-- VPN Gateway en Local Network Gateway
-- `tls_private_key` voor SSH
+- Azure VM en netwerkresources
+- ESXi VM via standalone ESXi provider
+- SSH key output
+- Cloud-init templates
 
-## 1:15 - 1:45 CloudInit en SSH
+## 1:15 - 2:00 GitHub Actions
 
-Laat de twee `cloud-init.yml.tftpl` bestanden zien. Toon dat de public key in `ssh_authorized_keys` komt.
-
-Laat daarna zien:
-
-```powershell
-terraform output -raw ssh_public_key
-terraform output -raw ssh_private_key_pem
-```
-
-## 1:45 - 2:30 CI en tests
-
-Open `.github/workflows/ci.yml`. Laat zien dat er getest wordt voor deployment:
-
-- `terraform fmt`
-- `terraform validate`
-- Ansible Galaxy install
-- Ansible syntax check
-
-## 2:30 - 3:30 Deployment en Ansible
-
-Laat de commando's zien:
-
-```powershell
-terraform plan -out tfplan
-terraform apply tfplan
-ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
-```
-
-Laat `ansible/requirements.yml` zien voor de Galaxy role en `app/docker-compose.yml` voor Docker Hub images.
-
-## 3:30 - 4:30 Werkende applicatie
-
-Open de webapp op de Azure VM en ESXi VM. Laat op de VM zien:
-
-```powershell
-docker ps
-docker compose ps
-```
-
-Test de hybride connectie:
-
-```powershell
-ssh -i .\iac-lab.pem iacadmin@<azure-vm-public-ip> "curl -I http://<esxi-vm-private-ip>"
-```
-
-## 4:30 - 5:00 Best practices
+Open `.github/workflows/ci.yml`.
 
 Laat zien:
 
-- `.gitignore` zonder secrets
-- `terraform.tfvars.example`
-- modules in plaats van alles in een bestand
-- sensitive variables voor wachtwoorden en VPN key
-- documentatie in `README.md` en `docs/architecture.md`
+- `validate_and_lint`
+- `terraform fmt`
+- `terraform validate`
+- `yamllint`
+- Ansible syntax check
+- deploy job met SSH key uit GitHub Secrets
 
+## 2:00 - 3:15 Ansible En Docker
+
+Laat `ansible/deploy.yml` en de eigen roles zien:
+
+- `roles/docker`
+- `roles/app`
+- `roles/hybrid_vpn`
+
+Run of toon:
+
+```bash
+ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+```
+
+Wijs op:
+
+```text
+azure returns 200 via Docker Compose
+esxi returns 200 via Docker Compose
+failed=0
+```
+
+## 3:15 - 4:15 Hybride Connectie
+
+Test vanaf Azure naar ESXi via WireGuard:
+
+```bash
+ssh -i ~/.ssh/iac-lab.pem Student@20.93.128.239 "ping -c 4 10.50.0.2"
+ssh -i ~/.ssh/iac-lab.pem Student@20.93.128.239 "curl http://10.50.0.2"
+```
+
+Laat ook de Azure webapp zien:
+
+```bash
+curl http://20.93.128.239
+```
+
+## 4:15 - 5:00 Best Practices
+
+Laat zien:
+
+- `.gitignore` zonder secrets/state/keys
+- `terraform.tfvars.example`
+- geen wachtwoorden in GitHub
+- modules en variabelen
+- README en documentatie

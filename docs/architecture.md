@@ -2,41 +2,47 @@
 
 ## Azure
 
-Terraform maakt een resource group, VNet, workload subnet, GatewaySubnet, Network Security Group, public IP en Ubuntu VM.
+Terraform beheert de Azure resource group, het VNet, workload subnet, Network Security Group, public IP, NIC en Ubuntu VM.
 
-De Azure VM gebruikt CloudInit voor:
+De Azure VM gebruikt Cloud-init voor:
 
-- Linux user `iacadmin`
+- Linux admin user
 - SSH authorized key
-- Python en basispackages voor Ansible
+- basispackages voor Ansible
 
-## ESXi/vSphere
+## ESXi
 
-Terraform kloont een bestaande Ubuntu cloud-init template naar vSphere/ESXi. De VM krijgt CloudInit via `guestinfo.userdata`.
+Terraform gebruikt de `josenk/esxi` provider om op standalone ESXi een VM te clonen vanaf de template `ubuntu-2204-cloudinit-template`.
 
 Vereisten voor de template:
 
-- Ubuntu 22.04 of vergelijkbaar
+- Ubuntu Server
+- DHCP op het VM-netwerk
+- `openssh-server`
 - `open-vm-tools`
-- cloud-init met VMware guestinfo datasource
-- DHCP of een netwerkconfiguratie die past bij je lab
+- een Ansible-gebruiker met sudo-rechten
 
-## Hybride verbinding
+## Hybride Verbinding
 
-Terraform maakt de Azure-kant van een site-to-site VPN:
+De werkende hybride verbinding loopt via WireGuard:
 
-- Azure VPN Gateway
-- Local Network Gateway met het on-prem/ESXi netwerk
-- IPsec connection met pre-shared key
+- Azure VM: `10.50.0.1`
+- ESXi VM: `10.50.0.2`
+- UDP poort `51820` is geopend in de Azure NSG
 
-De on-prem kant moet in je labomgeving bestaan op een router, firewall of NSX edge. Vul in `terraform.tfvars` het publieke IP van die endpoint en het on-prem CIDR in.
+De tunnel wordt door de eigen Ansible role `hybrid_vpn` uitgerold. Hiermee kan de Azure VM de ESXi VM bereiken via het tunneladres.
+
+Er is ook een optionele Azure VPN Gateway module aanwezig voor een klassieke site-to-site VPN, maar die vereist een echte on-prem IPsec-router/firewall en staat standaard uit.
 
 ## Applicatie
 
-Ansible installeert Docker met de Galaxy role `geerlingguy.docker` en start daarna `app/docker-compose.yml`.
+Ansible gebruikt eigen roles:
 
-De Compose file gebruikt images van Docker Hub:
+- `docker`: installeert Docker Engine en `docker-compose-plugin` via de officiele Docker repository
+- `app`: kopieert `app/docker-compose.yml`, rendert de webpagina en start de stack
+- `hybrid_vpn`: configureert WireGuard tussen Azure en ESXi
+
+De Compose file gebruikt images vanaf Docker Hub:
 
 - `nginx:1.27-alpine`
 - `traefik/whoami:v1.10`
-

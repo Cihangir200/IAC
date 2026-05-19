@@ -1,32 +1,36 @@
-# Hybrid Cloud IAC Lab
+# Hybrid Cloud IaC Lab
 
-Deze repo bevat een complete voorbeeldopdracht voor een hybride cloud deployment met Terraform, Azure, vSphere/ESXi, CloudInit, Ansible Galaxy, Docker Compose en GitHub Actions.
+Deze repository bevat een volledige hybride IaC-deployment voor Azure en standalone ESXi. Terraform maakt de infrastructuur, Cloud-init configureert de basis, Ansible installeert Docker en rolt de applicatie uit, en GitHub Actions verzorgt validatie en deployment.
 
 ## Architectuur
 
-- Azure VNet met subnetten voor workload en VPN Gateway
-- Azure Linux VM met SSH key uit Terraform
-- vSphere/ESXi Linux VM op basis van een template
-- CloudInit op beide VM's voor users, SSH en basispackages
-- Site-to-site connectie: Azure VPN Gateway + Local Network Gateway richting het ESXi/on-prem netwerk
-- Ansible playbook met Galaxy role `geerlingguy.docker`
+- Azure resource group, VNet, subnet, NSG, public IP, NIC en Ubuntu VM
+- Standalone ESXi VM via de `josenk/esxi` Terraform provider en een Ubuntu template
+- SSH public/private key authenticatie voor Azure
+- Cloud-init userdata voor basisconfiguratie van VM's
+- WireGuard tunnel tussen Azure en ESXi (`10.50.0.1` naar `10.50.0.2`)
 - Docker Compose applicatie met images vanaf Docker Hub
-- GitHub Actions pipeline voor `terraform fmt`, `terraform validate` en Ansible syntax checks
+- GitHub Actions workflow met validate/lint en deploy jobs
 
-## Mappen
+## Structuur
 
 ```text
 .
 |-- .github/workflows/ci.yml
 |-- ansible/
-|-- app/
+|   |-- deploy.yml
+|   |-- inventory.ini.example
+|   `-- roles/
+|       |-- app/
+|       |-- docker/
+|       `-- hybrid_vpn/
+|-- app/docker-compose.yml
 |-- docs/
 |-- modules/
 |   |-- azure_linux_vm/
 |   |-- azure_network/
 |   |-- azure_vpn/
 |   `-- vsphere_vm/
-|-- tests/
 |-- main.tf
 |-- providers.tf
 |-- variables.tf
@@ -34,84 +38,80 @@ Deze repo bevat een complete voorbeeldopdracht voor een hybride cloud deployment
 `-- terraform.tfvars.example
 ```
 
-## Voorbereiding
+## Secrets
 
-1. Installeer Terraform, Ansible en de Azure CLI.
-2. Login op Azure:
+Zet geen secrets in Git. Gebruik lokaal `terraform.tfvars` en in GitHub Actions repository secrets.
 
-```powershell
-az login
-az account set --subscription "<subscription-id>"
+Benodigde GitHub Secrets voor de deploy job:
+
+```text
+AZURE_CREDENTIALS
+AZURE_SUBSCRIPTION_ID
+AZURE_VM_USER
+ESXI_HOST
+ESXI_USER
+ESXI_PASSWORD
+ESXI_GUEST_USER
+ESXI_GUEST_PASSWORD
+ONPREM_VPN_PUBLIC_IP
+VPN_SHARED_KEY
+SSH_PRIVATE_KEY
 ```
 
-3. Maak een `terraform.tfvars` op basis van `terraform.tfvars.example`.
-4. Vul je Azure, vSphere en on-prem VPN gegevens in.
-5. Installeer Ansible Galaxy rollen:
+De deploy job is bedoeld voor een self-hosted runner die jouw ESXi-netwerk kan bereiken en waarop Terraform, Azure CLI, Ansible, Python en VMware OVF Tool beschikbaar zijn.
 
-```powershell
-ansible-galaxy install -r ansible/requirements.yml
-```
-
-### Windows en WSL
-
-Op Windows draai je Terraform vanuit PowerShell. Open na installatie een nieuwe PowerShell zodat de PATH-wijziging geladen wordt:
+## Lokale Deployment
 
 ```powershell
 cd C:\Users\Student\Desktop\IAC
-terraform version
-terraform init
-```
-
-Ansible draai je vanuit Ubuntu/WSL:
-
-```powershell
-wsl
-cd /mnt/c/Users/Student/Desktop/IAC
-ansible-galaxy install -r ansible/requirements.yml
-ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
-```
-
-## Deployment
-
-```powershell
 terraform init
 terraform fmt -recursive
 terraform validate
 terraform plan -out tfplan
 terraform apply tfplan
+terraform output
 ```
 
-Toon de gegenereerde SSH keys:
+Ansible vanuit WSL:
 
-```powershell
-terraform output -raw ssh_public_key
-terraform output -raw ssh_private_key_pem
-```
-
-Maak daarna een inventory op basis van de Terraform output:
-
-```powershell
-terraform output -json > terraform-output.json
-```
-
-Gebruik de publieke IP's in `ansible/inventory.ini` en draai:
-
-```powershell
-ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
+```bash
+cd /mnt/c/Users/Student/Desktop/IAC
+ansible-galaxy collection install -r ansible/requirements.yml
+ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
 ```
 
 ## Testen
 
-Lokaal:
-
 ```powershell
 terraform fmt -recursive -check
 terraform validate
-ansible-playbook -i ansible/inventory.ini.example ansible/playbook.yml --syntax-check
 ```
 
-In GitHub Actions draait dezelfde basisvalidatie automatisch bij push en pull request.
+```bash
+ansible-playbook -i ansible/inventory.ini.example ansible/deploy.yml --syntax-check
+```
 
-## Demo in video
+Werkende applicatie:
 
-Zie [docs/video-script.md](docs/video-script.md) voor een script van maximaal 5 minuten.
+```bash
+curl http://20.93.128.239
+ssh -i ~/.ssh/iac-lab.pem Student@20.93.128.239 "curl http://10.50.0.2"
+```
+
+WireGuard tunneltest:
+
+```bash
+ssh -i ~/.ssh/iac-lab.pem Student@20.93.128.239 "ping -c 4 10.50.0.2"
+```
+
+## Demo
+
+Laat in de video zien:
+
+- GitHub repository en laatste workflow run
+- Terraform validate/plan/output
+- Azure VM en ESXi VM
+- SSH key gebruik in GitHub Actions en lokale demo
+- Ansible run met `failed=0`
+- Docker containers op beide VM's
+- Webapp via Azure public IP en via WireGuard naar ESXi

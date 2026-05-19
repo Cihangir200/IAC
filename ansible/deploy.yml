@@ -1,5 +1,5 @@
 ---
-- name: Configure hybrid cloud VMs and deploy Docker Compose app
+- name: Configure hybrid cloud VPN and Docker app
   hosts: hybrid
   become: true
 
