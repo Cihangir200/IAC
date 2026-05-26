@@ -1,17 +1,14 @@
 services:
   web:
-    image: nginx:1.27-alpine
+    image: docker.io/library/nginx:1.27-alpine
     container_name: iac-hybrid-web
     restart: unless-stopped
     ports:
       - "80:80"
     volumes:
       - ./html:/usr/share/nginx/html:ro
-
-  whoami:
-    image: traefik/whoami:v1.10
-    container_name: iac-hybrid-whoami
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

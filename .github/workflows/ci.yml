@@ -56,8 +56,6 @@ jobs:
       TF_VAR_vsphere_server: ${{ secrets.ESXI_HOST }}
       TF_VAR_vsphere_user: ${{ secrets.ESXI_USER }}
       TF_VAR_vsphere_password: ${{ secrets.ESXI_PASSWORD }}
-      TF_VAR_vpn_shared_key: ${{ secrets.VPN_SHARED_KEY }}
-      TF_VAR_onprem_vpn_public_ip: ${{ secrets.ONPREM_VPN_PUBLIC_IP }}
       TF_VAR_admin_password: ${{ secrets.ESXI_GUEST_PASSWORD }}
 
     steps:
@@ -81,21 +79,39 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Write SSH private key from GitHub Secrets
+      - name: Prepare SSH directory
         shell: bash
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/iac-lab.pem
-          chmod 600 ~/.ssh/iac-lab.pem
-
-      - name: Show SSH public key from Terraform
-        run: terraform output -raw ssh_public_key || true
 
       - name: Terraform init
         run: terraform init
 
       - name: Terraform apply
         run: terraform apply -auto-approve
+
+      - name: Write Terraform SSH private key
+        shell: bash
+        run: |
+          terraform output -raw ssh_private_key_pem > ~/.ssh/iac-lab.pem
+          chmod 600 ~/.ssh/iac-lab.pem
+
+      - name: Show Terraform SSH public key
+        run: terraform output -raw ssh_public_key
+
+      - name: Enable ESXi root SSH key login
+        shell: bash
+        run: |
+          ESXI_IP="$(terraform output -raw vsphere_vm_private_ip)"
+          terraform output -raw ssh_public_key > /tmp/iac-root-authorized-keys
+
+          sshpass -p "${{ secrets.ESXI_GUEST_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${{ secrets.ESXI_GUEST_USER }}@${ESXI_IP}" \
+            "command -v cloud-init >/dev/null && timeout 300 cloud-init status --wait || true"
+
+          sshpass -p "${{ secrets.ESXI_GUEST_PASSWORD }}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /tmp/iac-root-authorized-keys "${{ secrets.ESXI_GUEST_USER }}@${ESXI_IP}:/tmp/iac-root-authorized-keys"
+
+          sshpass -p "${{ secrets.ESXI_GUEST_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${{ secrets.ESXI_GUEST_USER }}@${ESXI_IP}" \
+            "printf '%s\n' '${{ secrets.ESXI_GUEST_PASSWORD }}' | sudo -S -p '' sh -c 'mkdir -p /root/.ssh /etc/ssh/sshd_config.d && install -o root -g root -m 600 /tmp/iac-root-authorized-keys /root/.ssh/authorized_keys && printf \"%s\n\" \"PermitRootLogin prohibit-password\" \"PubkeyAuthentication yes\" > /etc/ssh/sshd_config.d/99-iac-root-login.conf && rm -f /tmp/iac-root-authorized-keys && (systemctl restart ssh || systemctl restart sshd)'"
 
       - name: Build Ansible inventory from Terraform outputs
         shell: bash
@@ -106,7 +122,7 @@ jobs:
           {
             echo "[hybrid]"
             echo "azure ansible_host=${AZURE_IP} ansible_user=${{ secrets.AZURE_VM_USER }} ansible_ssh_private_key_file=~/.ssh/iac-lab.pem wireguard_address=10.50.0.1 wireguard_listen_port=51820"
-            echo "esxi ansible_host=${ESXI_IP} ansible_user=${{ secrets.ESXI_GUEST_USER }} ansible_password=${{ secrets.ESXI_GUEST_PASSWORD }} ansible_become_password=${{ secrets.ESXI_GUEST_PASSWORD }} wireguard_address=10.50.0.2"
+            echo "esxi ansible_host=${ESXI_IP} ansible_user=root ansible_ssh_private_key_file=~/.ssh/iac-lab.pem ansible_become=false wireguard_address=10.50.0.2"
           } > ansible/generated/inventory.ini
 
       - name: Accept SSH host keys
@@ -114,6 +130,7 @@ jobs:
         run: |
           ssh-keyscan -H "$(terraform output -raw azure_vm_public_ip)" >> ~/.ssh/known_hosts
           ssh-keyscan -H "$(terraform output -raw vsphere_vm_private_ip)" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/iac-lab.pem -o StrictHostKeyChecking=no root@"$(terraform output -raw vsphere_vm_private_ip)" whoami
 
       - name: Wait for SSH
         shell: bash

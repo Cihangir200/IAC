@@ -32,8 +32,6 @@ De werkende hybride verbinding loopt via WireGuard:
 
 De tunnel wordt door de eigen Ansible role `hybrid_vpn` uitgerold. Hiermee kan de Azure VM de ESXi VM bereiken via het tunneladres.
 
-Er is ook een optionele Azure VPN Gateway module aanwezig voor een klassieke site-to-site VPN, maar die vereist een echte on-prem IPsec-router/firewall en staat standaard uit.
-
 ## Applicatie
 
 Ansible gebruikt eigen roles:
@@ -44,5 +42,4 @@ Ansible gebruikt eigen roles:
 
 De Compose file gebruikt images vanaf Docker Hub:
 
-- `nginx:1.27-alpine`
-- `traefik/whoami:v1.10`
+- `docker.io/library/nginx:1.27-alpine`

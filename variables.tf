@@ -40,12 +40,6 @@ variable "enable_azure_deployment" {
   default     = true
 }
 
-variable "enable_azure_vpn" {
-  description = "Zet op true om ook Azure VPN Gateway en site-to-site resources aan te maken."
-  type        = bool
-  default     = false
-}
-
 variable "admin_username" {
   description = "Linux admin user voor Azure en ESXi VM's."
   type        = string
@@ -75,23 +69,6 @@ variable "azure_vnet_cidr" {
   description = "CIDR voor Azure VNet."
   type        = string
   default     = "10.10.0.0/16"
-}
-
-variable "onprem_cidr" {
-  description = "CIDR van het ESXi/on-prem netwerk."
-  type        = string
-  default     = "192.168.56.0/24"
-}
-
-variable "onprem_vpn_public_ip" {
-  description = "Publiek IP-adres van de on-prem VPN endpoint/router."
-  type        = string
-}
-
-variable "vpn_shared_key" {
-  description = "Pre-shared key voor de VPN tunnel."
-  type        = string
-  sensitive   = true
 }
 
 variable "vsphere_server" {

@@ -1,9 +1,0 @@
----
-- name: Configure hybrid cloud VMs and deploy Docker Compose app
-  hosts: hybrid
-  become: true
-
-  roles:
-    - role: hybrid_vpn
-    - role: docker
-    - role: app

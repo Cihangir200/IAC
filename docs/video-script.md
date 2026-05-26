@@ -26,7 +26,7 @@ Laat zien:
 - `terraform validate`
 - `yamllint`
 - Ansible syntax check
-- deploy job met SSH key uit GitHub Secrets
+- deploy job met Terraform SSH key output
 
 ## 2:00 - 3:15 Ansible En Docker
 
@@ -55,14 +55,14 @@ failed=0
 Test vanaf Azure naar ESXi via WireGuard:
 
 ```bash
-ssh -i ~/.ssh/iac-lab.pem Student@20.93.128.239 "ping -c 4 10.50.0.2"
-ssh -i ~/.ssh/iac-lab.pem Student@20.93.128.239 "curl http://10.50.0.2"
+ssh -i ~/.ssh/iac-lab.pem Student@<azure-public-ip> "ping -c 4 10.50.0.2"
+ssh -i ~/.ssh/iac-lab.pem Student@<azure-public-ip> "curl http://10.50.0.2"
 ```
 
 Laat ook de Azure webapp zien:
 
 ```bash
-curl http://20.93.128.239
+curl http://<azure-public-ip>
 ```
 
 ## 4:15 - 5:00 Best Practices

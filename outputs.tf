@@ -8,16 +8,6 @@ output "azure_vm_private_ip" {
   value       = try(module.azure_vm["enabled"].private_ip_address, null)
 }
 
-output "azure_vpn_public_ip" {
-  description = "Publiek IP-adres van de Azure VPN Gateway."
-  value       = try(module.azure_vpn["enabled"].public_ip_address, null)
-}
-
-output "azure_vpn_enabled" {
-  description = "Geeft aan of Azure VPN Gateway resources in deze run worden aangemaakt."
-  value       = var.enable_azure_vpn
-}
-
 output "azure_deployment_enabled" {
   description = "Geeft aan of Azure resources in deze run worden aangemaakt."
   value       = var.enable_azure_deployment

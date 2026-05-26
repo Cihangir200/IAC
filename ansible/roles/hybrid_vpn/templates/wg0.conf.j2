@@ -1,7 +1,10 @@
 [Interface]
-Address = {{ wireguard_address }}/24
+Address = {{ wireguard_address }}/32
 PrivateKey = {{ wireguard_private_key }}
 ListenPort = {{ wireguard_listen_port | default(51820) }}
+PostUp = sysctl -w net.ipv4.conf.all.rp_filter=0
+PostUp = sysctl -w net.ipv4.conf.default.rp_filter=0
+PostUp = sysctl -w net.ipv4.conf.%i.rp_filter=0
 
 {% if inventory_hostname == 'azure' %}
 PostUp = sysctl -w net.ipv4.ip_forward=1

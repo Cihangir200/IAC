@@ -7,7 +7,6 @@ azure_resource_group_name     = "s1187594"
 azure_subscription_id         = "00000000-0000-0000-0000-000000000000"
 
 enable_azure_deployment = true
-enable_azure_vpn        = false
 
 admin_username = "Student"
 admin_password = "vervang-mij-alleen-lokaal"
@@ -15,12 +14,6 @@ admin_password = "vervang-mij-alleen-lokaal"
 azure_vnet_cidr     = "10.0.0.0/16"
 azure_workload_cidr = "10.0.1.0/24"
 azure_vm_size       = "Standard_DS1_v2"
-
-onprem_cidr = "192.168.1.0/24"
-
-# Alleen relevant als enable_azure_vpn = true.
-onprem_vpn_public_ip = "203.0.113.10"
-vpn_shared_key       = "vervang-door-een-sterke-pre-shared-key"
 
 vsphere_server   = "192.168.1.99"
 vsphere_user     = "root"

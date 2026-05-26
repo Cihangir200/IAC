@@ -11,6 +11,7 @@
       - runc
     state: absent
     update_cache: true
+    lock_timeout: 300
 
 - name: Install Docker repository dependencies
   ansible.builtin.apt:
@@ -19,6 +20,7 @@
       - curl
       - gnupg
     state: present
+    lock_timeout: 300
 
 - name: Create Docker apt keyring directory
   ansible.builtin.file:
@@ -52,6 +54,7 @@
       - docker-buildx-plugin
       - docker-compose-plugin
     state: present
+    lock_timeout: 300
 
 - name: Start and enable Docker service
   ansible.builtin.service:
