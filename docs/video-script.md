@@ -6,7 +6,7 @@ Laat de opdracht en GitHub repo zien. Noem dat de oplossing Terraform, Cloud-ini
 
 ## 0:30 - 1:15 Terraform
 
-Laat `main.tf`, `modules/azure_linux_vm`, `modules/azure_network` en `modules/vsphere_vm` zien.
+Laat `terraform/main.tf`, `terraform/modules/azure_linux_vm`, `terraform/modules/azure_network` en `terraform/modules/vsphere_vm` zien.
 
 Wijs aan:
 
@@ -70,7 +70,7 @@ curl http://<azure-public-ip>
 Laat zien:
 
 - `.gitignore` zonder secrets/state/keys
-- `terraform.tfvars.example`
+- `terraform/terraform.tfvars.example`
 - geen wachtwoorden in GitHub
 - modules en variabelen
 - README en documentatie

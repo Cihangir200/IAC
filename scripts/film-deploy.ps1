@@ -43,6 +43,7 @@ function ConvertTo-WslPath {
 }
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$terraformDir = Join-Path $repoRoot "terraform"
 $repoRootWsl = ConvertTo-WslPath $repoRoot
 $generatedDir = Join-Path $repoRoot "ansible\generated"
 $generatedDirWsl = "$repoRootWsl/ansible/generated"
@@ -55,7 +56,7 @@ $inventoryPathWsl = "$generatedDirWsl/deployment_inventory.ini"
 $rootAuthorizedKeysPath = Join-Path $generatedDir "root_authorized_keys"
 $rootAuthorizedKeysPathWsl = "$generatedDirWsl/root_authorized_keys"
 
-Set-Location $repoRoot
+Set-Location $terraformDir
 
 $ovfToolPath = "C:\Program Files\VMware\VMware OVF Tool"
 if (Test-Path $ovfToolPath) {
@@ -66,8 +67,8 @@ if ([string]::IsNullOrWhiteSpace($EsxiGuestPassword)) {
     $EsxiGuestPassword = $env:TF_VAR_admin_password
 }
 
-if ([string]::IsNullOrWhiteSpace($EsxiGuestPassword) -and (Test-Path ".\terraform.tfvars")) {
-    $tfvarsPassword = Select-String -Path ".\terraform.tfvars" -Pattern '^\s*admin_password\s*=\s*"([^"]+)"' | Select-Object -First 1
+if ([string]::IsNullOrWhiteSpace($EsxiGuestPassword) -and (Test-Path (Join-Path $terraformDir "terraform.tfvars"))) {
+    $tfvarsPassword = Select-String -Path (Join-Path $terraformDir "terraform.tfvars") -Pattern '^\s*admin_password\s*=\s*"([^"]+)"' | Select-Object -First 1
     if ($tfvarsPassword) {
         $EsxiGuestPassword = $tfvarsPassword.Matches[0].Groups[1].Value
     }
@@ -84,6 +85,7 @@ Require-Command wsl
 Require-Command az
 
 Write-Host "Deployment start vanuit: $repoRoot" -ForegroundColor Green
+Write-Host "Terraform map: $terraformDir"
 
 Write-Step "Stap 1: Terraform validate"
 terraform validate

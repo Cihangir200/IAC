@@ -26,12 +26,14 @@ jobs:
           python -m pip install ansible yamllint
 
       - name: Terraform format check
-        run: terraform fmt -recursive -check
+        run: terraform fmt -recursive -check terraform
 
       - name: Terraform init without backend
+        working-directory: terraform
         run: terraform init -backend=false
 
       - name: Terraform validate
+        working-directory: terraform
         run: terraform validate
 
       - name: YAML lint
@@ -85,25 +87,29 @@ jobs:
           mkdir -p ~/.ssh
 
       - name: Terraform init
+        working-directory: terraform
         run: terraform init
 
       - name: Terraform apply
+        working-directory: terraform
         run: terraform apply -auto-approve
 
       - name: Write Terraform SSH private key
         shell: bash
+        working-directory: terraform
         run: |
           terraform output -raw ssh_private_key_pem > ~/.ssh/iac-lab.pem
           chmod 600 ~/.ssh/iac-lab.pem
 
       - name: Show Terraform SSH public key
+        working-directory: terraform
         run: terraform output -raw ssh_public_key
 
       - name: Enable ESXi root SSH key login
         shell: bash
         run: |
-          ESXI_IP="$(terraform output -raw vsphere_vm_private_ip)"
-          terraform output -raw ssh_public_key > /tmp/iac-root-authorized-keys
+          ESXI_IP="$(terraform -chdir=terraform output -raw vsphere_vm_private_ip)"
+          terraform -chdir=terraform output -raw ssh_public_key > /tmp/iac-root-authorized-keys
 
           sshpass -p "${{ secrets.ESXI_GUEST_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${{ secrets.ESXI_GUEST_USER }}@${ESXI_IP}" \
             "command -v cloud-init >/dev/null && timeout 300 cloud-init status --wait || true"
@@ -116,8 +122,8 @@ jobs:
       - name: Build Ansible inventory from Terraform outputs
         shell: bash
         run: |
-          AZURE_IP="$(terraform output -raw azure_vm_public_ip)"
-          ESXI_IP="$(terraform output -raw vsphere_vm_private_ip)"
+          AZURE_IP="$(terraform -chdir=terraform output -raw azure_vm_public_ip)"
+          ESXI_IP="$(terraform -chdir=terraform output -raw vsphere_vm_private_ip)"
           mkdir -p ansible/generated
           {
             echo "[hybrid]"
@@ -128,14 +134,14 @@ jobs:
       - name: Accept SSH host keys
         shell: bash
         run: |
-          ssh-keyscan -H "$(terraform output -raw azure_vm_public_ip)" >> ~/.ssh/known_hosts
-          ssh-keyscan -H "$(terraform output -raw vsphere_vm_private_ip)" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/iac-lab.pem -o StrictHostKeyChecking=no root@"$(terraform output -raw vsphere_vm_private_ip)" whoami
+          ssh-keyscan -H "$(terraform -chdir=terraform output -raw azure_vm_public_ip)" >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$(terraform -chdir=terraform output -raw vsphere_vm_private_ip)" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/iac-lab.pem -o StrictHostKeyChecking=no root@"$(terraform -chdir=terraform output -raw vsphere_vm_private_ip)" whoami
 
       - name: Wait for SSH
         shell: bash
         run: |
-          for host in "$(terraform output -raw azure_vm_public_ip)" "$(terraform output -raw vsphere_vm_private_ip)"; do
+          for host in "$(terraform -chdir=terraform output -raw azure_vm_public_ip)" "$(terraform -chdir=terraform output -raw vsphere_vm_private_ip)"; do
             for i in {1..30}; do
               nc -z "$host" 22 && break
               sleep 10

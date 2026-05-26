@@ -12,7 +12,8 @@ function Write-Step {
 }
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-Set-Location $repoRoot
+$terraformDir = Join-Path $repoRoot "terraform"
+Set-Location $terraformDir
 
 $ovfToolPath = "C:\Program Files\VMware\VMware OVF Tool"
 if (Test-Path $ovfToolPath) {
@@ -20,6 +21,7 @@ if (Test-Path $ovfToolPath) {
 }
 
 Write-Host "Destroy start vanuit: $repoRoot" -ForegroundColor Green
+Write-Host "Terraform map: $terraformDir"
 
 if ($StartAzureVmFirst) {
     Write-Step "Azure VM starten indien nodig"
