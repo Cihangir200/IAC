@@ -1,6 +1,6 @@
 # Hybrid Cloud IaC Lab
 
-Deze repository bevat een hybride IaC labopstelling waarbij Azure gecombineerd wordt met een lokale ESXi omgeving. Terraform maakt de infrastructuur aan, Cloud-init doet de basisconfiguratie en Ansible installeert WireGuard, Docker en de webapp.
+Deze repository bevat een hybride Infrastructure as Code labopstelling waarbij Azure wordt gecombineerd met een lokale ESXi omgeving. Terraform maakt de infrastructuur aan, Cloud-init doet de basisconfiguratie van de VM's en Ansible installeert WireGuard, Docker en de webapp.
 
 ## Architectuur
 
@@ -16,7 +16,8 @@ Deze repository bevat een hybride IaC labopstelling waarbij Azure gecombineerd w
 ```text
 .
 |-- .github/
-|   `-- workflows/ci.yml
+|   `-- workflows/
+|       `-- ci.yml
 |-- ansible/
 |   |-- deploy.yml
 |   |-- inventory.ini
@@ -44,6 +45,39 @@ Deze repository bevat een hybride IaC labopstelling waarbij Azure gecombineerd w
         `-- vsphere_vm/
 ```
 
+## Belangrijke Onderdelen
+
+### Terraform
+
+De Terraform code staat in de map `terraform/`.
+
+- `terraform/main.tf` roept de modules aan.
+- `terraform/providers.tf` configureert Azure en ESXi providers.
+- `terraform/variables.tf` bevat alle invoervariabelen.
+- `terraform/outputs.tf` geeft onder andere de Azure public IP, ESXi IP en SSH key output terug.
+- `terraform/modules/azure_network/` maakt het Azure netwerk.
+- `terraform/modules/azure_linux_vm/` maakt de Azure VM.
+- `terraform/modules/vsphere_vm/` maakt de ESXi VM.
+
+### Ansible
+
+De Ansible code staat in de map `ansible/`.
+
+- `ansible/deploy.yml` is het hoofdplaybook.
+- `ansible/roles/hybrid_vpn/` configureert WireGuard.
+- `ansible/roles/docker/` installeert Docker Engine en de Docker Compose plugin.
+- `ansible/roles/app/` kopieert de Compose file, rendert de webpagina en start de applicatie.
+
+### Docker Compose
+
+De applicatie staat in `app/docker-compose.yml`.
+
+De webapp gebruikt een Docker image vanaf Docker Hub:
+
+```yaml
+image: docker.io/library/nginx:1.27-alpine
+```
+
 ## Secrets
 
 Zet geen secrets in Git. Gebruik lokaal `terraform/terraform.tfvars` en in GitHub Actions repository secrets.
@@ -61,6 +95,15 @@ ESXI_GUEST_USER
 ESXI_GUEST_PASSWORD
 ```
 
+Deze bestanden worden genegeerd door `.gitignore`:
+
+```text
+terraform/terraform.tfvars
+terraform/*.tfstate
+*.pem
+ansible/generated/
+```
+
 ## Lokale Deployment
 
 Voor de demonstratie kan de volledige deployment met een script worden uitgevoerd:
@@ -70,6 +113,16 @@ cd C:\Users\Student\Desktop\IAC
 .\scripts\film-deploy.ps1
 ```
 
+Het script doet automatisch:
+
+- Terraform validate, plan en apply
+- Terraform outputs ophalen
+- SSH private key klaarzetten in WSL
+- wachten tot SSH bereikbaar is
+- Ansible inventory genereren
+- Ansible playbook uitvoeren
+- WireGuard ping en webapp controleren
+
 Resources verwijderen:
 
 ```powershell
@@ -77,7 +130,7 @@ cd C:\Users\Student\Desktop\IAC
 .\scripts\destroy-all.ps1 -StartAzureVmFirst
 ```
 
-Handmatige Terraform-stappen:
+## Handmatige Terraform Stappen
 
 ```powershell
 cd C:\Users\Student\Desktop\IAC\terraform
@@ -89,19 +142,35 @@ terraform apply tfplan
 terraform output
 ```
 
-Ansible vanuit WSL:
+## Ansible
+
+Voor syntax checks kan de voorbeeld-inventory gebruikt worden:
+
+```powershell
+wsl ansible-playbook -i ansible/inventory.ini.example ansible/deploy.yml --syntax-check
+```
+
+Voor een echte deployment gebruikt het script de automatisch gegenereerde inventory:
 
 ```bash
 cd /mnt/c/Users/Student/Desktop/IAC
-ansible-galaxy collection install -r ansible/requirements.yml
-ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+ansible-playbook -i ansible/generated/deployment_inventory.ini ansible/deploy.yml
 ```
 
+`ansible/inventory.ini` bevat placeholders en is bedoeld als voorbeeld/uitleg. De echte IP-adressen worden uit Terraform outputs gehaald.
+
 ## Testen
+
+Terraform:
 
 ```powershell
 terraform -chdir=terraform fmt -recursive -check
 terraform -chdir=terraform validate
+```
+
+Ansible:
+
+```powershell
 wsl ansible-playbook -i ansible/inventory.ini.example ansible/deploy.yml --syntax-check
 ```
 
@@ -122,6 +191,7 @@ Laat in de video zien:
 - Cloud-init templates in de Terraform modules
 - Ansible playbook en eigen roles
 - Docker Compose image vanaf `docker.io`
+- Docker containers met `docker ps`
 - Webapp op Azure en ESXi
 - WireGuard ping tussen Azure en ESXi
-- `.gitignore`, `terraform.tfvars.example` en GitHub Secrets
+- `.gitignore`, `terraform/terraform.tfvars.example` en GitHub Secrets
