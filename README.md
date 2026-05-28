@@ -2,6 +2,20 @@
 
 Deze repository bevat een hybride Infrastructure as Code labopstelling waarbij Azure wordt gecombineerd met een lokale ESXi omgeving. Terraform maakt de infrastructuur aan, Cloud-init doet de basisconfiguratie van de VM's en Ansible installeert WireGuard, Docker en de webapp.
 
+## Inhoudsopgave
+
+- [Architectuur](#architectuur)
+- [Structuur](#structuur)
+- [Belangrijke Onderdelen](#belangrijke-onderdelen)
+  - [Terraform](#terraform)
+  - [Ansible](#ansible)
+  - [Docker Compose](#docker-compose)
+- [Secrets](#secrets)
+- [Lokale Deployment](#lokale-deployment)
+- [Handmatige Terraform Stappen](#handmatige-terraform-stappen)
+- [Ansible](#ansible-1)
+- [Testen](#testen)
+
 ## Architectuur
 
 - Azure resource group, VNet, subnet, NSG, public IP, NIC en Ubuntu VM
