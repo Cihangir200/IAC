@@ -181,17 +181,3 @@ terraform -chdir=terraform output -raw azure_vm_public_ip
 wsl bash -lc "ssh -i ~/.ssh/iac-lab.pem Student@<azure-public-ip> 'docker ps'"
 wsl bash -lc "ssh -i ~/.ssh/iac-lab.pem Student@<azure-public-ip> 'ping -c 4 10.50.0.2'"
 ```
-
-## Demo
-
-Laat in de video zien:
-
-- GitHub repository en workflow run
-- Terraform code in `terraform/`
-- Cloud-init templates in de Terraform modules
-- Ansible playbook en eigen roles
-- Docker Compose image vanaf `docker.io`
-- Docker containers met `docker ps`
-- Webapp op Azure en ESXi
-- WireGuard ping tussen Azure en ESXi
-- `.gitignore`, `terraform/terraform.tfvars.example` en GitHub Secrets
