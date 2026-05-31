@@ -29,7 +29,7 @@ output "ssh_public_key" {
 }
 
 output "ssh_private_key_pem" {
-  description = "Private SSH key voor de demo. Behandel deze als geheim."
+  description = "Private SSH key voor beheer en configuratie. Behandel deze als geheim."
   value       = tls_private_key.ssh.private_key_pem
   sensitive   = true
 }

@@ -45,7 +45,7 @@ Deze repository bevat een hybride Infrastructure as Code labopstelling waarbij A
 |   `-- docker-compose.yml
 |-- docs/
 |-- scripts/
-|   |-- film-deploy.ps1
+|   |-- deploy.ps1
 |   `-- destroy-all.ps1
 `-- terraform/
     |-- main.tf
@@ -120,11 +120,11 @@ ansible/generated/
 
 ## Lokale Deployment
 
-Voor de demonstratie kan de volledige deployment met een script worden uitgevoerd:
+De volledige deployment kan met een script worden uitgevoerd:
 
 ```powershell
 cd C:\Users\Student\Desktop\IAC
-.\scripts\film-deploy.ps1
+.\scripts\deploy.ps1
 ```
 
 Het script doet automatisch:
