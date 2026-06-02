@@ -9,7 +9,3 @@ output "vnet_name" {
 output "workload_subnet_id" {
   value = azurerm_subnet.workload.id
 }
-
-output "gateway_subnet_id" {
-  value = null
-}

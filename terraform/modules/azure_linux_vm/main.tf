@@ -26,20 +26,8 @@ resource "azurerm_network_security_group" "this" {
   }
 
   security_rule {
-    name                       = "Allow-Portainer"
-    priority                   = 1002
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "9000"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
     name                       = "AllowHTTP"
-    priority                   = 1003
+    priority                   = 1002
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -51,7 +39,7 @@ resource "azurerm_network_security_group" "this" {
 
   security_rule {
     name                       = "AllowWireGuard"
-    priority                   = 1004
+    priority                   = 1003
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Udp"

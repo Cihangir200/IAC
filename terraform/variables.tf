@@ -16,12 +16,6 @@ variable "location" {
   default     = "westeurope"
 }
 
-variable "azure_resource_group_location" {
-  description = "Azure locatie voor de resource group metadata. Windesheim policy staat hiervoor andere regio's toe dan voor resources."
-  type        = string
-  default     = "westeurope"
-}
-
 variable "azure_resource_group_name" {
   description = "Naam van de bestaande Azure resource group die voor de opdracht gebruikt moet worden."
   type        = string
@@ -88,26 +82,9 @@ variable "vsphere_password" {
   sensitive   = true
 }
 
-variable "vsphere_allow_unverified_ssl" {
-  description = "Sta self-signed vSphere certificaten toe."
-  type        = bool
-  default     = true
-}
-
-variable "vsphere_datacenter" {
-  description = "Naam van het vSphere datacenter."
-  type        = string
-}
-
 variable "vsphere_datastore" {
   description = "Naam van de datastore."
   type        = string
-}
-
-variable "vsphere_resource_pool" {
-  description = "Naam van de vSphere/ESXi resource pool."
-  type        = string
-  default     = "Resources"
 }
 
 variable "vsphere_network" {

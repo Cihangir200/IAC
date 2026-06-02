@@ -1,7 +1,3 @@
-variable "project_name" {
-  type = string
-}
-
 variable "location" {
   type = string
 }
@@ -29,4 +25,3 @@ variable "ssh_public_key" {
 variable "vm_size" {
   type = string
 }
-

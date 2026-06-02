@@ -10,15 +10,7 @@ variable "ssh_public_key" {
   type = string
 }
 
-variable "datacenter_name" {
-  type = string
-}
-
 variable "datastore_name" {
-  type = string
-}
-
-variable "resource_pool" {
   type = string
 }
 

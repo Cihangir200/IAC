@@ -2,7 +2,7 @@
 
 ## Azure
 
-Terraform beheert de Azure resource group, het VNet, workload subnet, Network Security Group, public IP, NIC en Ubuntu VM.
+Terraform gebruikt de bestaande Azure resource group en beheert het VNet, workload subnet, Network Security Group, public IP, NIC en Ubuntu VM.
 
 De Azure VM gebruikt Cloud-init voor:
 

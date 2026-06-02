@@ -8,17 +8,17 @@ Deze repository bevat een hybride Infrastructure as Code labopstelling waarbij A
 - [Structuur](#structuur)
 - [Belangrijke Onderdelen](#belangrijke-onderdelen)
   - [Terraform](#terraform)
-  - [Ansible](#ansible)
+  - [Ansible Roles](#ansible-roles)
   - [Docker Compose](#docker-compose)
 - [Secrets](#secrets)
 - [Lokale Deployment](#lokale-deployment)
 - [Handmatige Terraform Stappen](#handmatige-terraform-stappen)
-- [Ansible](#ansible-1)
+- [Ansible Uitvoeren](#ansible-uitvoeren)
 - [Testen](#testen)
 
 ## Architectuur
 
-- Azure resource group, VNet, subnet, NSG, public IP, NIC en Ubuntu VM
+- Bestaande Azure resource group met een VNet, subnet, NSG, public IP, NIC en Ubuntu VM
 - Standalone ESXi VM via de `josenk/esxi` Terraform provider
 - Cloud-init voor SSH setup en basispackages
 - WireGuard tunnel tussen Azure en ESXi (`10.50.0.1` naar `10.50.0.2`)
@@ -35,7 +35,6 @@ Deze repository bevat een hybride Infrastructure as Code labopstelling waarbij A
 |-- ansible/
 |   |-- deploy.yml
 |   |-- inventory.ini
-|   |-- inventory.ini.example
 |   |-- group_vars/
 |   `-- roles/
 |       |-- app/
@@ -73,7 +72,7 @@ De Terraform code staat in de map `terraform/`.
 - `terraform/modules/azure_linux_vm/` maakt de Azure VM.
 - `terraform/modules/vsphere_vm/` maakt de ESXi VM.
 
-### Ansible
+### Ansible Roles
 
 De Ansible code staat in de map `ansible/`.
 
@@ -156,12 +155,12 @@ terraform apply tfplan
 terraform output
 ```
 
-## Ansible
+## Ansible Uitvoeren
 
-Voor syntax checks kan de voorbeeld-inventory gebruikt worden:
+Voor syntax checks kan de inventory met placeholders gebruikt worden:
 
 ```powershell
-wsl ansible-playbook -i ansible/inventory.ini.example ansible/deploy.yml --syntax-check
+wsl ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --syntax-check
 ```
 
 Voor een echte deployment gebruikt het script de automatisch gegenereerde inventory:
@@ -185,7 +184,7 @@ terraform -chdir=terraform validate
 Ansible:
 
 ```powershell
-wsl ansible-playbook -i ansible/inventory.ini.example ansible/deploy.yml --syntax-check
+wsl ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --syntax-check
 ```
 
 Na deployment:

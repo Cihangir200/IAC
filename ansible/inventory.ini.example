@@ -1,3 +1,0 @@
-[hybrid]
-azure ansible_host=<azure-vm-public-ip> ansible_user=iacadmin ansible_ssh_private_key_file=~/.ssh/iac-lab.pem wireguard_address=10.50.0.1 wireguard_listen_port=51820
-esxi ansible_host=<esxi-vm-ip> ansible_user=iacadmin ansible_ssh_private_key_file=~/.ssh/iac-lab.pem wireguard_address=10.50.0.2
